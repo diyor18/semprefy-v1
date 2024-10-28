@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+import boto3
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile
 from ..database import engine, get_db
 import psycopg2
 from .. import models, schemas, utils, oauth2
@@ -6,6 +7,12 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
 
+#Boto Start
+S3_BUCKET_NAME = "semprefyv1"
+
+s3 = boto3.client("s3")
+
+#Boto End
 router = APIRouter(
     prefix = "/users",
     tags=["Users"]
@@ -42,3 +49,17 @@ def get_current_user(db: Session = Depends(get_db), current_user: int = Depends(
 #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
     
 #     return user
+
+
+
+#dummy photo uploader
+
+@router.post("/photos", status_code=201)
+def upload_photo(file: UploadFile):
+    print(file.filename)
+    print(file.content_type)
+    
+    #upload to aws
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(S3_BUCKET_NAME)
+    bucket.upload_fileobj(file.file, file.filename)
