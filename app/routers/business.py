@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile, File
 from ..database import engine, get_db
 import psycopg2
 from .. import models, schemas, utils, oauth2
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
+from ..config import settings
 
 router = APIRouter(
     prefix = "/businesses",
@@ -13,11 +14,15 @@ router = APIRouter(
 
 #CREATE A BUSINESS
 @router.post("/create", response_model=schemas.BusinessOut)
-def create_business(business: schemas.BusinessCreate, db: Session = Depends(get_db)):
+def create_business(business: schemas.BusinessCreate = Depends(), file: UploadFile = File(...), db: Session = Depends(get_db)):
     #HASHING THE PASSWORD
     hashed_password = utils.hash(business.password)
     business.password = hashed_password
-    new_business = models.Business(**business.dict())
+    
+    # Upload the image to S3 and get the URL
+    profile_image = utils.upload_image_to_s3(file)
+    
+    new_business = models.Business(**business.dict(), profile_image = profile_image)
     db.add(new_business)
     db.commit()
     db.refresh(new_business)

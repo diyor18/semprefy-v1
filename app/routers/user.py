@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile, File
 from ..database import engine, get_db
 import psycopg2
 from .. import models, schemas, utils, oauth2
@@ -14,7 +14,7 @@ router = APIRouter(
 
 #CREATE A USER
 @router.post("/create", response_model=schemas.UserOut)
-def create_user(user: schemas.UserCreate, file: UploadFile, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate = Depends(), file: UploadFile = File(...), db: Session = Depends(get_db)):
     #HASHING THE PASSWORD
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
@@ -22,6 +22,7 @@ def create_user(user: schemas.UserCreate, file: UploadFile, db: Session = Depend
     # Upload the image to S3 and get the URL
     profile_image = utils.upload_image_to_s3(file)
     
+    # Create a new user record with image URL
     new_user = models.User(**user.dict(), profile_image = profile_image)
     db.add(new_user)
     db.commit()
