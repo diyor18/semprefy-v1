@@ -14,6 +14,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    profile_image = Column(String, nullable=True)
     
     subscriptions = relationship("Subscription", back_populates="user")
     

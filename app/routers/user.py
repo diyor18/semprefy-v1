@@ -1,4 +1,3 @@
-import boto3
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile
 from ..database import engine, get_db
 import psycopg2
@@ -6,13 +5,8 @@ from .. import models, schemas, utils, oauth2
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
+from ..config import settings
 
-#Boto Start
-S3_BUCKET_NAME = "semprefyv1"
-
-s3 = boto3.client("s3")
-
-#Boto End
 router = APIRouter(
     prefix = "/users",
     tags=["Users"]
@@ -20,11 +14,15 @@ router = APIRouter(
 
 #CREATE A USER
 @router.post("/create", response_model=schemas.UserOut)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, file: UploadFile, db: Session = Depends(get_db)):
     #HASHING THE PASSWORD
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
-    new_user = models.User(**user.dict())
+    
+    # Upload the image to S3 and get the URL
+    profile_image = utils.upload_image_to_s3(file)
+    
+    new_user = models.User(**user.dict(), profile_image = profile_image)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -49,17 +47,3 @@ def get_current_user(db: Session = Depends(get_db), current_user: int = Depends(
 #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
     
 #     return user
-
-
-
-#dummy photo uploader
-
-@router.post("/photos", status_code=201)
-def upload_photo(file: UploadFile):
-    print(file.filename)
-    print(file.content_type)
-    
-    #upload to aws
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket(S3_BUCKET_NAME)
-    bucket.upload_fileobj(file.file, file.filename)

@@ -13,6 +13,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     user_id: int
     created_at: datetime
+    profile_image: str
         
     class Config:
         from_attributes = True
@@ -41,6 +42,7 @@ class BusinessOut(UserBase):
     business_id: int
     created_at: datetime
     phone: int
+    profile_image: str
     
     class Config:
         from_attributes = True
