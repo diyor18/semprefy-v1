@@ -78,6 +78,9 @@ class ServiceVote(ServiceBase):
         
 class Category(BaseModel):
     name: str
+    category_image: str
+    description: str
+    
     
 class Subscription(BaseModel):
     user_id: int
