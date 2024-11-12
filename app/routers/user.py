@@ -20,7 +20,7 @@ def create_user(user: schemas.UserCreate = Depends(), file: UploadFile = File(No
     user.password = hashed_password
     
     # Upload the image to S3 and get the URL
-    profile_image = utils.upload_image_to_s3(file)
+    profile_image = utils.upload_image_to_s3(file) if file else None
     
     # Create a new user record with image URL
     new_user = models.User(**user.dict(), profile_image = profile_image)

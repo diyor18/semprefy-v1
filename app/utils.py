@@ -20,6 +20,9 @@ s3_client = boto3.client(
 )
 
 def upload_image_to_s3(file: UploadFile) -> str:
+    if not file:
+        # No file provided, so return None or a default URL if you have one
+        return None
     try:
         # Generate a unique file name
         file_extension = file.filename.split(".")[-1]

@@ -13,7 +13,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     user_id: int
     created_at: datetime
-    profile_image: str
+    profile_image: Optional[str] = None
         
     class Config:
         from_attributes = True
