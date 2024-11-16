@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from typing_extensions import Annotated
 
@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 class CardOut(BaseModel):
     card_number: str
     card_expiry: str
-    card_brand: Optional[str] = None
+    card_brand: Optional[str] = "Semprefy"
 
     class Config:
         from_attributes = True   
@@ -28,6 +28,9 @@ class UserOut(UserBase):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            date: lambda v: v.strftime("%d/%m/%Y") if v else None
+        }
         
 class UserLogin(BaseModel):
     email: EmailStr

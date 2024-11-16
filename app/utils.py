@@ -4,8 +4,9 @@ from passlib.context import CryptContext
 import boto3
 from uuid import uuid4
 from .config import settings
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, status
 import logging
+import re
 
 # Initialize logger
 logging.basicConfig(level=logging.INFO)
@@ -75,3 +76,27 @@ def verify(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
+
+
+def get_card_brand(card_number: str) -> str:
+    # Remove spaces to validate the actual digits
+    clean_number = card_number.replace(" ", "")
+    # Visa cards start with a 4
+    if re.match(r"^4\d{15}$", clean_number):  # Visa cards must have exactly 16 digits
+        return "Visa"
+    # MasterCard cards start with 51-55 or 2221-2720
+    elif re.match(r"^5[1-5]\d{14}$", clean_number) or re.match(r"^2(2[2-9]\d{2}|[3-6]\d{3}|7[0-1]\d{2}|720)\d{12}$", clean_number):
+        return "MasterCard"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid card number. Only Visa and MasterCard are accepted."
+        )
+        
+        
+def validate_card_format(card_number: str):
+    if not re.match(r"^\d{4} \d{4} \d{4} \d{4}$", card_number):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Card number must be in the format 'xxxx xxxx xxxx xxxx'."
+        )

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
 from ..config import settings
+from datetime import datetime
 
 router = APIRouter(
     prefix = "/users",
@@ -70,13 +71,25 @@ def update_user(
     if email:
         user.email = email
     if birthdate:
-        user.birthdate = birthdate  # Assuming you have a 'birthdate' field in the User model
+        try:
+            user.birthdate = datetime.strptime(birthdate, "%d/%m/%Y").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid birthdate format. Use dd/mm/yyyy."
+            )
 
     # Commit changes to the user record
     db.commit()
 
     # If card information is provided, update the card
     if card_number and card_expiry:
+        
+        utils.validate_card_format(card_number)
+        
+        # Determine card brand
+        card_brand = utils.get_card_brand(card_number)
+
         # Check if a card already exists for the user
         card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
         
@@ -84,12 +97,14 @@ def update_user(
             # Update the existing card
             card.card_number = card_number
             card.card_expiry = card_expiry
+            card.card_brand = card_brand
         else:
             # If no card exists, create a new card
             new_card = models.Card(
                 user_id=current_user.user_id,
                 card_number=card_number,
-                card_expiry=card_expiry
+                card_expiry=card_expiry,
+                card_brand=card_brand
             )
             db.add(new_card)
         
