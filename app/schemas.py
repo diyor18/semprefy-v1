@@ -3,6 +3,15 @@ from datetime import datetime
 from typing import Optional
 from typing_extensions import Annotated
 
+
+class CardOut(BaseModel):
+    card_number: str
+    card_expiry: str
+    card_brand: Optional[str] = None
+
+    class Config:
+        from_attributes = True   
+        
 class UserBase(BaseModel):
     email: EmailStr
     name: str
@@ -14,7 +23,9 @@ class UserOut(UserBase):
     user_id: int
     created_at: datetime
     profile_image: Optional[str] = None
-        
+    birthdate: Optional[datetime] = None
+    card: Optional[CardOut] = None  
+
     class Config:
         from_attributes = True
         
@@ -90,4 +101,3 @@ class Subscription(BaseModel):
     
     class Config:
         from_attributes = True
-    

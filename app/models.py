@@ -1,6 +1,6 @@
 from .database import Base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date, CheckConstraint
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.ext.declarative import declarative_base
@@ -15,8 +15,23 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     profile_image = Column(String, nullable=True)
+    birthdate = Column(Date, nullable=True)
     
     subscriptions = relationship("Subscription", back_populates="user")
+    cards = relationship("Card", back_populates="user")
+    
+
+class Card(Base):
+    __tablename__ = "cards"
+    
+    card_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    card_number = Column(String(19), nullable=False)
+    card_expiry = Column(String(5), nullable=False)
+    card_brand = Column(String, nullable=True)
+    
+    user = relationship("User", back_populates="cards")
+    
     
 class Business(Base):
     __tablename__ = "businesses"

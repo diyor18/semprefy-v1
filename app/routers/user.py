@@ -37,14 +37,74 @@ def get_current_user(db: Session = Depends(get_db), current_user: int = Depends(
     
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {current_user.user_id} does not exist")
+    card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
     
+    # If a card exists, add it to the user response
+    if card:
+        user.card = schemas.CardOut(
+            card_number=card.card_number,
+            card_expiry=card.card_expiry,
+            card_brand=card.card_brand
+        )
     return user
 
-# @router.get("/{id}", response_model=schemas.UserOut)
-# def get_user(id: int, db: Session = Depends(get_db)):
-#     user = db.query(models.User).filter(models.User.user_id == id).first()
+@router.patch("/update", response_model=schemas.UserOut)
+def update_user(
+    name: str = None,  # Optional fields to update
+    email: str = None,
+    birthdate: str = None,
+    card_number: str = None,
+    card_expiry: str = None,
+    db: Session = Depends(get_db),  # Database session
+    current_user: int = Depends(oauth2.get_current_user)  # Current logged-in user
+):
+    # Fetch the current user from the database
+    user = db.query(models.User).filter(models.User.user_id == current_user.user_id).first()
     
-#     if not user:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {current_user.user_id} does not exist")
+
+    # Update user fields if provided
+    if name:
+        user.name = name
+    if email:
+        user.email = email
+    if birthdate:
+        user.birthdate = birthdate  # Assuming you have a 'birthdate' field in the User model
+
+    # Commit changes to the user record
+    db.commit()
+
+    # If card information is provided, update the card
+    if card_number and card_expiry:
+        # Check if a card already exists for the user
+        card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
+        
+        if card:
+            # Update the existing card
+            card.card_number = card_number
+            card.card_expiry = card_expiry
+        else:
+            # If no card exists, create a new card
+            new_card = models.Card(
+                user_id=current_user.user_id,
+                card_number=card_number,
+                card_expiry=card_expiry
+            )
+            db.add(new_card)
+        
+        db.commit()
+
+    # Refresh and return the updated user
+    db.refresh(user)
+    card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
     
-#     return user
+    # If a card exists, add it to the user response
+    if card:
+        user.card = schemas.CardOut(
+            card_number=card.card_number,
+            card_expiry=card.card_expiry,
+            card_brand=card.card_brand
+        )
+    return user
+
