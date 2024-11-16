@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 class CardOut(BaseModel):
     card_number: str
     card_expiry: str
-    card_brand: Optional[str] = "Semprefy"
+    card_brand: str
 
     class Config:
         from_attributes = True   
@@ -22,6 +22,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     user_id: int
     created_at: datetime
+    number_of_subscriptions: int  # New field added
     profile_image: Optional[str] = None
     birthdate: Optional[datetime] = None
     card: Optional[CardOut] = None  
@@ -56,7 +57,7 @@ class BusinessOut(UserBase):
     business_id: int
     created_at: datetime
     phone: int
-    profile_image: str
+    profile_image: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -99,7 +100,7 @@ class Category(BaseModel):
 class Subscription(BaseModel):
     user_id: int
     service_id: int
-    user: UserOut
+    user: UserBase
     service: ServiceOut
     
     class Config:

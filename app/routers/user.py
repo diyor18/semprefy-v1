@@ -40,14 +40,30 @@ def get_current_user(db: Session = Depends(get_db), current_user: int = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {current_user.user_id} does not exist")
     card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
     
+    number_of_subscriptions = db.query(models.Subscription).filter(models.Subscription.user_id == current_user.user_id).count()
+
     # If a card exists, add it to the user response
+    card_out = None
     if card:
-        user.card = schemas.CardOut(
+        card_out = schemas.CardOut(
             card_number=card.card_number,
             card_expiry=card.card_expiry,
             card_brand=card.card_brand
         )
-    return user
+        
+        
+    user_out = schemas.UserOut(
+        user_id=user.user_id,
+        email=user.email,
+        name=user.name,
+        created_at=user.created_at,
+        profile_image=user.profile_image,
+        birthdate=user.birthdate,
+        card=card_out,
+        number_of_subscriptions=number_of_subscriptions  # Include the subscription count
+    )
+    
+    return user_out
 
 @router.patch("/update", response_model=schemas.UserOut)
 def update_user(

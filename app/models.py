@@ -28,7 +28,7 @@ class Card(Base):
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     card_number = Column(String(19), nullable=False)
     card_expiry = Column(String(5), nullable=False)
-    card_brand = Column(String, nullable=True)
+    card_brand = Column(String, nullable=False)
     
     user = relationship("User", back_populates="cards")
     

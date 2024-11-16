@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from . import auth
+from sqlalchemy.sql import func
 
 router = APIRouter(
     prefix = "/subscriptions",
@@ -41,3 +42,19 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
         raise HTTPException(status_code=404, detail="You don't have any subscriptions")
     
     return subscriptions
+
+@router.get("/my_subscriptions_amount", response_model=dict)
+def get_my_subscriptions_amount(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    
+    total_amount = (
+        db.query(func.sum(models.Service.price))
+        .join(models.Subscription, models.Service.service_id == models.Subscription.service_id)
+        .filter(models.Subscription.user_id == current_user.user_id)
+        .filter(models.Subscription.status == 'active')  # Adjust this condition as needed
+        .scalar()
+    )
+
+    if total_amount is None:
+        total_amount = 0  # Default to 0 if no subscriptions are found
+
+    return {"monthly_payable": total_amount}
