@@ -65,7 +65,7 @@ def get_current_user(db: Session = Depends(get_db), current_user: int = Depends(
     
     return user_out
 
-@router.patch("/update", response_model=schemas.UserOut)
+@router.patch("/update", response_model=schemas.UserBase)
 def update_user(
     name: str = None,  # Optional fields to update
     email: str = None,
