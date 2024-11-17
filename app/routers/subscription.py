@@ -32,6 +32,12 @@ def create_subscription(service_id: int, db: Session = Depends(get_db), current_
     if existing_subscription:
         raise HTTPException(status_code=400, detail="Subscription already exists")
     
+    # Retrieve user's card details (assuming the user's card is stored in a 'User' or 'Card' model)
+    user_card = db.query(models.Card).filter(models.Card.user_id == current_user.user_id).first()
+    
+    if not user_card:
+        raise HTTPException(status_code=400, detail="User does not have a card associated")
+    
     # Calculate expiry date
     subscription_date = datetime.utcnow()
     expiry_date = subscription_date + relativedelta(months=service.duration)
@@ -57,7 +63,8 @@ def create_subscription(service_id: int, db: Session = Depends(get_db), current_
         amount=service.price,
         status="Complete",  # Initial transaction is marked as complete
         subscription_id=new_subscription.subscription_id,
-        created_at=subscription_date  # Use the subscription creation date
+        created_at=subscription_date,  # Use the subscription creation date
+        card_brand=user_card.card_brand  # Assign the user's card brand
     )
     db.add(first_transaction)
     db.commit()

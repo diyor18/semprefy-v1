@@ -42,6 +42,7 @@ def process_transactions(db: Session):
     subscriptions = db.query(models.Subscription).all()
 
     for subscription in subscriptions:
+        user_card = db.query(models.Card).filter(models.Card.user_id == subscription.user_id).first()
         # Check if `days_till_next_payment` is 5
         if subscription.days_till_next_payment == 5:
             # Check if a pending transaction already exists for this subscription
@@ -58,7 +59,8 @@ def process_transactions(db: Session):
                 new_transaction = models.Transaction(
                     amount=subscription.service.price,
                     status="pending",
-                    subscription_id=subscription.subscription_id
+                    subscription_id=subscription.subscription_id,
+                    card_brand=user_card.card_brand 
                 )
                 db.add(new_transaction)
         

@@ -101,6 +101,7 @@ class Transaction(Base):
     amount = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     status = Column(String, nullable=False)
+    card_brand = Column(String, nullable=False)
     subscription_id = Column(Integer, ForeignKey("subscriptions.subscription_id", ondelete="CASCADE"), nullable=False)
     
     subscription = relationship("Subscription", back_populates="transactions")

@@ -121,6 +121,8 @@ class Transaction(BaseModel):
     created_at: datetime
     status: str
     subscription_id: int
+    card_brand: str
+    subscription: Subscription
 
     class Config:
         from_attributes = True
