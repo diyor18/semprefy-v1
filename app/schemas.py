@@ -100,8 +100,15 @@ class Category(BaseModel):
 class Subscription(BaseModel):
     user_id: int
     service_id: int
+    days_till_next_payment: int
+    subscription_date: datetime
+    expiry_date: datetime
+    status: str
     user: UserBase
     service: ServiceOut
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            date: lambda v: v.strftime("%d/%m/%Y") if v else None
+        }

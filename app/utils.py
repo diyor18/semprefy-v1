@@ -86,7 +86,7 @@ def get_card_brand(card_number: str) -> str:
         return "Visa"
     # MasterCard cards start with 51-55 or 2221-2720
     elif re.match(r"^5[1-5]\d{14}$", clean_number) or re.match(r"^2(2[2-9]\d{2}|[3-6]\d{3}|7[0-1]\d{2}|720)\d{12}$", clean_number):
-        return "MasterCard"
+        return "Mastercard"
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
