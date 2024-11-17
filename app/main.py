@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .database import engine
 from . import models
-from .routers import user, auth, business, service, vote, category, subscription
+from .routers import user, auth, business, service, vote, category, subscription, transaction
 from .config import Settings
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,6 +26,7 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(category.router)
 app.include_router(subscription.router)
+app.include_router(transaction.router)
 
 @app.get("/")
 async def root():

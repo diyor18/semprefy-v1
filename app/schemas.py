@@ -112,3 +112,18 @@ class Subscription(BaseModel):
         json_encoders = {
             date: lambda v: v.strftime("%d/%m/%Y") if v else None
         }
+        
+        
+        
+class Transaction(BaseModel):
+    transaction_id: int
+    amount: int
+    created_at: datetime
+    status: str
+    subscription_id: int
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            date: lambda v: v.strftime("%d/%m/%Y") if v else None
+        }
