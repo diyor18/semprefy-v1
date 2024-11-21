@@ -59,7 +59,7 @@ class BusinessBase(BaseModel):
     city: str
     address: str
     bank_acount: str
-    bank_account: str
+    bank_account_name: str
     bank_name: str
     
 class BusinessCreate(UserBase):
