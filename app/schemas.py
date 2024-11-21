@@ -4,6 +4,11 @@ from typing import Optional
 from typing_extensions import Annotated
 
 
+class Category(BaseModel):
+    name: str
+    category_image: Optional[str] = None
+    description: Optional[str] = None
+
 class CardOut(BaseModel):
     card_number: str
     card_expiry: str
@@ -48,25 +53,31 @@ class TokenData(BaseModel):
 class BusinessBase(BaseModel):
     email: EmailStr
     name: str
+    phone: int
+    description: str
+    country: str
+    city: str
+    address: str
+    bank_acount: str
+    bank_account: str
+    bank_name: str
     
 class BusinessCreate(UserBase):
     password: str
-    phone: int
     
 class BusinessOut(UserBase):
     business_id: int
     created_at: datetime
-    phone: int
     profile_image: Optional[str] = None
     
     class Config:
         from_attributes = True
     
 class ServiceBase(BaseModel):
-    name:str
-    description:str
-    price:int
-    billing_cycle: str
+    name: str
+    description: str
+    price: int
+    duration: int
     
 class ServiceCreate(ServiceBase):
     pass
@@ -75,14 +86,11 @@ class ServiceOut(ServiceBase):
     service_id: int
     business_id: int
     business: BusinessOut
+    category: Category
     
     class Config:
         from_attributes = True
         
-        
-class Vote(BaseModel):
-    service_id: int
-    dir: Annotated[int, Field(strict=True, ge=0, le=1)]
     
 class ServiceVote(ServiceBase):
     Service: ServiceOut
@@ -91,11 +99,6 @@ class ServiceVote(ServiceBase):
     class Config:
         from_attributes = True
         
-class Category(BaseModel):
-    name: str
-    category_image: str
-    description: str
-    
     
 class Subscription(BaseModel):
     user_id: int
@@ -113,8 +116,7 @@ class Subscription(BaseModel):
             date: lambda v: v.strftime("%d/%m/%Y") if v else None
         }
         
-        
-        
+            
 class Transaction(BaseModel):
     transaction_id: int
     amount: int
@@ -129,3 +131,4 @@ class Transaction(BaseModel):
         json_encoders = {
             date: lambda v: v.strftime("%d/%m/%Y") if v else None
         }
+        
