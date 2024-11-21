@@ -41,7 +41,7 @@ class Business(Base):
     description = Column(String, nullable=True)
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    phone = Column(Integer, nullable=False)
+    phone = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     profile_image = Column(String, nullable=True)
     country = Column(String, nullable=False)

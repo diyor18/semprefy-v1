@@ -14,13 +14,13 @@ router = APIRouter(
 
 #CREATE A BUSINESS
 @router.post("/create", response_model=schemas.BusinessOut)
-def create_business(business: schemas.BusinessCreate = Depends(), file: UploadFile = File(...), db: Session = Depends(get_db)):
+def create_business(business: schemas.BusinessCreate = Depends(), file: UploadFile = File(None), db: Session = Depends(get_db)):
     #HASHING THE PASSWORD
     hashed_password = utils.hash(business.password)
     business.password = hashed_password
     
     # Upload the image to S3 and get the URL
-    profile_image = utils.upload_image_to_s3(file)
+    profile_image = utils.upload_image_to_s3(file) if file else None
     
     new_business = models.Business(**business.dict(), profile_image = profile_image)
     db.add(new_business)

@@ -53,19 +53,19 @@ class TokenData(BaseModel):
 class BusinessBase(BaseModel):
     email: EmailStr
     name: str
-    phone: int
+    phone: str
     description: str
     country: str
     city: str
     address: str
-    bank_acount: str
+    bank_account: str
     bank_account_name: str
     bank_name: str
     
-class BusinessCreate(UserBase):
+class BusinessCreate(BusinessBase):
     password: str
     
-class BusinessOut(UserBase):
+class BusinessOut(BusinessBase):
     business_id: int
     created_at: datetime
     profile_image: Optional[str] = None
