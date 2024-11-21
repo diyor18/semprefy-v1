@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date, CheckConstraint
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date, CheckConstraint, Float
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
@@ -44,6 +44,12 @@ class Business(Base):
     phone = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     profile_image = Column(String, nullable=True)
+    country = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    address = Column(String, nullable=False)
+    bank_account = Column(String, nullable=False)
+    bank_account_name = Column(String, nullable=False)
+    bank_name = Column(String, nullable=False)
     
     services = relationship("Service", back_populates="business")
     
@@ -54,9 +60,7 @@ class Service(Base):
     service_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    tier = Column(Integer, nullable=True)
-    price = Column(Integer, nullable=False)
-    billing_cycle = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     service_image = Column(String, nullable=True)
     business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
