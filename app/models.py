@@ -52,6 +52,7 @@ class Business(Base):
     bank_name = Column(String, nullable=False)
     
     services = relationship("Service", back_populates="business")
+    payouts = relationship("Payout", back_populates="business")
     
 
 class Service(Base):
@@ -66,6 +67,7 @@ class Service(Base):
     business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=True)
     duration = Column(Integer, nullable=False, default=12)  # duration in months
+    status = Column(String, nullable=False, default="active")
     
     category = relationship("Category", back_populates="services")
     business = relationship("Business", back_populates="services")
@@ -110,8 +112,13 @@ class Transaction(Base):
     
     subscription = relationship("Subscription", back_populates="transactions")
     
-class Vote(Base):
-    __tablename__ = "votes"
+class Payout(Base):
+    __tablename__ = "payouts"
     
-    user_id = Column(Integer, ForeignKey("users.user_id" ,ondelete="CASCADE"), primary_key=True)
-    service_id = Column(Integer, ForeignKey("services.service_id", ondelete="CASCADE"), primary_key=True)
+    payout_id = Column(Integer, primary_key=True, autoincrement=True)
+    business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
+    amount = Column(Integer, nullable=False)
+    payout_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    status = Column(String, nullable=False)
+    
+    business = relationship("Business", back_populates="payouts")

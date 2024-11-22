@@ -12,13 +12,13 @@ router = APIRouter(
 )
 
 #GET All CATEGORIES
-@router.get("/all", response_model=List[schemas.Category])
+@router.get("/all", response_model=List[schemas.CategoryOut])
 def categories(db: Session = Depends(get_db)):
     categories = db.query(models.Category).all()
     return categories
 
 #GET TOP CATEGORIES
-@router.get("/top", response_model=List[schemas.Category])
+@router.get("/top", response_model=List[schemas.CategoryOut])
 def categories(db: Session = Depends(get_db), limit: int = 10):
     categories = db.query(models.Category).limit(limit).all()
     return categories

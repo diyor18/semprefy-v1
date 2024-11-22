@@ -4,10 +4,13 @@ from typing import Optional
 from typing_extensions import Annotated
 
 
-class Category(BaseModel):
+class CategoryOut(BaseModel):
     name: str
     category_image: Optional[str] = None
     description: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
 
 class CardOut(BaseModel):
     card_number: str
@@ -76,7 +79,7 @@ class BusinessOut(BusinessBase):
 class ServiceBase(BaseModel):
     name: str
     description: str
-    price: int
+    price: float
     duration: int
     
 class ServiceCreate(ServiceBase):
@@ -86,7 +89,7 @@ class ServiceOut(ServiceBase):
     service_id: int
     business_id: int
     business: BusinessOut
-    category: Category
+    category: CategoryOut
     
     class Config:
         from_attributes = True
@@ -131,4 +134,3 @@ class Transaction(BaseModel):
         json_encoders = {
             date: lambda v: v.strftime("%d/%m/%Y") if v else None
         }
-        
