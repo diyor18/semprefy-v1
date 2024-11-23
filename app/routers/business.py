@@ -178,7 +178,7 @@ def get_current_business_graph_data(
     
     # Iterate over each day in the current month up to today
     for single_date in (start_of_month + timedelta(days=i) for i in range((today - start_of_month).days + 1)):
-        day_int = int(single_date.strftime("%d"))
+        day_int = int(single_date.strftime("%d"))  # Extract the day and convert it to an integer
         
         # Count new users who created subscriptions with services owned by the current business on this day
         new_users_count = (
@@ -205,12 +205,13 @@ def get_current_business_graph_data(
 
         # Append the day's data to the response
         graph_data.append({
-            "day": day_str,
+            "day": day_int,  # Use the integer day
             "new_users": new_users_count,
             "transactions": transactions_count
         })
 
     return {"graph_data": graph_data}
+
 
 
 
