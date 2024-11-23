@@ -8,6 +8,8 @@ from typing import List
 from ..config import settings
 from sqlalchemy.sql import func, extract
 from datetime import date, datetime, timedelta
+from sqlalchemy import desc
+
 
 
 router = APIRouter(
@@ -209,3 +211,46 @@ def get_current_business_graph_data(
         })
 
     return {"graph_data": graph_data}
+
+
+
+@router.get("/current/payouts")
+def get_current_business_payouts(
+    db: Session = Depends(get_db),
+    current_business: int = Depends(oauth2.get_current_business)
+):
+    business_id = current_business.business_id
+
+    # Query transactions for the current business, ordered by created_at descending
+    payouts = (
+        db.query(
+            models.Transaction.transaction_id,
+            models.Transaction.amount,
+            models.Transaction.created_at,
+            models.Transaction.status,
+            models.Subscription.user_id,
+            models.Service.name.label("service_name"),
+            models.Service.service_image.label("service_image")
+        )
+        .join(models.Subscription, models.Transaction.subscription_id == models.Subscription.subscription_id)
+        .join(models.Service, models.Service.service_id == models.Subscription.service_id)
+        .filter(models.Service.business_id == business_id)
+        .order_by(desc(models.Transaction.created_at))  # Sort by created_at descending
+        .all()
+    )
+
+    # Format the result
+    formatted_payouts = [
+        {
+            "transaction_id": payout.transaction_id,
+            "user_id": payout.user_id,
+            "amount": payout.amount,
+            "service": payout.service_name,
+            "created_date": payout.created_at.strftime("%d/%m/%Y"),
+            "status": payout.status,
+            "service_image": payout.service_image 
+        }
+        for payout in payouts
+    ]
+
+    return {"payouts": formatted_payouts}

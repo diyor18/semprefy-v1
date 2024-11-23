@@ -30,7 +30,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     user_id: int
     created_at: datetime
-    number_of_subscriptions: int  # New field added
+    number_of_subscriptions: int
     profile_image: Optional[str] = None
     birthdate: Optional[datetime] = None
     card: Optional[CardOut] = None  
