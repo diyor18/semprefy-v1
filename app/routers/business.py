@@ -178,7 +178,7 @@ def get_current_business_graph_data(
     
     # Iterate over each day in the current month up to today
     for single_date in (start_of_month + timedelta(days=i) for i in range((today - start_of_month).days + 1)):
-        day_str = single_date.strftime("%Y-%m-%d")
+        day_str = single_date.strftime("%d")
         
         # Count new users who created subscriptions with services owned by the current business on this day
         new_users_count = (

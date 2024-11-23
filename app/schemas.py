@@ -90,6 +90,7 @@ class ServiceOut(ServiceBase):
     business_id: int
     business: BusinessOut
     category: Optional[CategoryOut] = None
+    status: str
     
     class Config:
         from_attributes = True
