@@ -89,7 +89,7 @@ class ServiceOut(ServiceBase):
     service_id: int
     business_id: int
     business: BusinessOut
-    category: CategoryOut
+    category: Optional[CategoryOut] = None
     
     class Config:
         from_attributes = True
