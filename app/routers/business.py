@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile, File
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, UploadFile, File, Query
 from ..database import engine, get_db
 import psycopg2
 from .. import models, schemas, utils, oauth2
 from sqlalchemy.orm import Session, joinedload, aliased
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from ..config import settings
 from sqlalchemy.sql import func, extract
 from datetime import date, datetime, timedelta
@@ -263,8 +263,10 @@ def get_current_business_payouts(
 def get_users_with_subscriptions(
     current_business: models.Business = Depends(oauth2.get_current_business),
     db: Session = Depends(get_db),
+    search: Optional[str] = Query(None, description="Search by user name")
 ):
-    subscriptions = (
+    # Base query to fetch subscriptions
+    query = (
         db.query(
             models.Subscription.subscription_id,
             models.User.name.label("user_name"),
@@ -278,7 +280,13 @@ def get_users_with_subscriptions(
         .join(models.Service, models.Subscription.service_id == models.Service.service_id)
         .join(models.User, models.Subscription.user_id == models.User.user_id)
         .filter(models.Service.business_id == current_business.business_id)
-        .all()
     )
+    
+    # Apply search filter if 'search' parameter is provided
+    if search:
+        query = query.filter(models.User.name.ilike(f"%{search}%"))
+    
+    # Execute query and fetch results
+    subscriptions = query.all()
     
     return subscriptions
