@@ -94,15 +94,7 @@ class ServiceOut(ServiceBase):
     
     class Config:
         from_attributes = True
-        
-    
-class ServiceVote(ServiceBase):
-    Service: ServiceOut
-    votes: int
-    
-    class Config:
-        from_attributes = True
-        
+            
     
 class Subscription(BaseModel):
     user_id: int
@@ -150,3 +142,6 @@ class UserSubscriptionOut(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            date: lambda v: v.strftime("%d/%m/%Y") if v else None
+        }

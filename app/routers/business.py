@@ -254,7 +254,8 @@ def get_current_business_payouts(
         for payout in payouts
     ]
 
-    return {"payouts": formatted_payouts}
+    return formatted_payouts
+
 
 
 
