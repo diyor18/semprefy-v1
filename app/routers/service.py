@@ -18,6 +18,7 @@ router = APIRouter(
 @router.get("/all", response_model=List[schemas.ServiceOut])
 def get_all_services(
     db: Session = Depends(get_db),
+    current_user: int = Depends(oauth2.get_current_user),
     category: Optional[str] = Query(None, description="Filter by category name"),
     city: Optional[str] = Query(None, description="Filter by business city"),
     sort_by: Optional[str] = Query(None, description="Sort by 'price_asc' or 'price_desc'"),
@@ -44,6 +45,11 @@ def get_all_services(
     elif sort_by == "price_desc":
         query = query.order_by(desc(models.Service.price))
     
+    subscribed_service_ids = db.query(models.Subscription.service_id).filter(models.Subscription.user_id == current_user.user_id).all()
+    subscribed_service_ids = [service_id[0] for service_id in subscribed_service_ids]
+    
+    if subscribed_service_ids:
+        query = query.filter(models.Service.service_id.notin_(subscribed_service_ids))
     # Execute query and fetch all results
     services = query.all()
 
