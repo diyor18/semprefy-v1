@@ -3,7 +3,7 @@ from ..database import engine, get_db
 import psycopg2
 from .. import models, schemas, utils, oauth2
 from sqlalchemy.orm import Session, joinedload, aliased
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from ..config import settings
 from sqlalchemy.sql import func, extract
@@ -33,6 +33,70 @@ def create_business(business: schemas.BusinessCreate = Depends(), file: UploadFi
     db.refresh(new_business)
     
     return new_business
+
+@router.patch("/current/update", response_model=schemas.BusinessBase)
+def update_current_business(
+    email: Optional[EmailStr] = None,
+    name: Optional[str] = None,
+    phone: Optional[str] = None,
+    description: Optional[str] = None,
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    address: Optional[str] = None,
+    bank_account: Optional[str] = None,
+    bank_account_name: Optional[str] = None,
+    bank_name: Optional[str] = None,
+    profile_image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_business: models.Business = Depends(oauth2.get_current_business),
+):
+    # Fetch the current business from the database
+    business = db.query(models.Business).filter(models.Business.business_id == current_business.business_id).first()
+    
+    if not business:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail=f"Business with ID {current_business.business_id} does not exist"
+        )
+
+    # Update fields if provided
+    if email:
+        business.email = email
+    if name:
+        business.name = name
+    if phone:
+        business.phone = phone
+    if description:
+        business.description = description
+    if country:
+        business.country = country
+    if city:
+        business.city = city
+    if address:
+        business.address = address
+    if bank_account:
+        business.bank_account = bank_account
+    if bank_account_name:
+        business.bank_account_name = bank_account_name
+    if bank_name:
+        business.bank_name = bank_name
+
+    # Handle profile image upload
+    if profile_image:
+        try:
+            business.profile_image = utils.upload_image_to_s3(profile_image)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                detail=f"Failed to upload profile image: {str(e)}"
+            )
+
+    # Commit updates to the database
+    db.commit()
+    db.refresh(business)
+
+    return business
+
 
 #GET CURRENT BUSINESS
 @router.get("/current", response_model=schemas.BusinessOut)
