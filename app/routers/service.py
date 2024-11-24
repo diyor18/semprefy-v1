@@ -14,7 +14,6 @@ router = APIRouter(
     tags=["Services"]
 )
 
-#GET ALL SERVICES
 @router.get("/all", response_model=List[schemas.ServiceOut])
 def get_all_services(
     db: Session = Depends(get_db),
@@ -24,8 +23,8 @@ def get_all_services(
     sort_by: Optional[str] = Query(None, description="Sort by 'price_asc' or 'price_desc'"),
     search: Optional[str] = ""
 ):
-    # Base query
-    query = db.query(models.Service)
+    # Base query with active status filter
+    query = db.query(models.Service).filter(models.Service.status == "active")
     
     # Join with Category to filter by category name
     if category:
@@ -45,15 +44,19 @@ def get_all_services(
     elif sort_by == "price_desc":
         query = query.order_by(desc(models.Service.price))
     
+    # Get subscribed service IDs for the current user
     subscribed_service_ids = db.query(models.Subscription.service_id).filter(models.Subscription.user_id == current_user.user_id).all()
     subscribed_service_ids = [service_id[0] for service_id in subscribed_service_ids]
     
+    # Exclude services the user is already subscribed to
     if subscribed_service_ids:
         query = query.filter(models.Service.service_id.notin_(subscribed_service_ids))
+    
     # Execute query and fetch all results
     services = query.all()
 
     return services
+
 
 #CREATE A SERVICE
 @router.post("/create", response_model=schemas.ServiceOut)

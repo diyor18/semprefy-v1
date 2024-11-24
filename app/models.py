@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 
 #example models
 class User(Base):
@@ -51,9 +52,7 @@ class Business(Base):
     bank_account_name = Column(String, nullable=False)
     bank_name = Column(String, nullable=False)
     
-    services = relationship("Service", back_populates="business")
-    payouts = relationship("Payout", back_populates="business")
-    
+    services = relationship("Service", back_populates="business")    
 
 class Service(Base):
     __tablename__ = "services"
@@ -85,9 +84,17 @@ class Subscription(Base):
     user_id = Column(Integer, ForeignKey("users.user_id" ,ondelete="CASCADE"), nullable=False)
     service_id = Column(Integer, ForeignKey("services.service_id", ondelete="CASCADE"), nullable=False)
     
+    
     service = relationship("Service", back_populates="subscription")
     user = relationship("User", back_populates="subscriptions")
     transactions = relationship("Transaction", back_populates="subscription")
+    
+    @hybrid_property
+    def progress_bar_next_payment(self):
+        if self.days_till_next_payment is not None:
+            progress = (30 - self.days_till_next_payment) / 30
+            return round(progress, 1)  # Round to 1 decimal
+        return None
 
 class Category(Base):
     __tablename__ = "categories"
@@ -112,13 +119,3 @@ class Transaction(Base):
     
     subscription = relationship("Subscription", back_populates="transactions")
     
-class Payout(Base):
-    __tablename__ = "payouts"
-    
-    payout_id = Column(Integer, primary_key=True, autoincrement=True)
-    business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
-    amount = Column(Integer, nullable=False)
-    payout_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    status = Column(String, nullable=False)
-    
-    business = relationship("Business", back_populates="payouts")

@@ -111,6 +111,7 @@ class Subscription(BaseModel):
     subscription_date: datetime
     expiry_date: datetime
     status: str
+    progress_bar_next_payment: Optional[float]  # Include computed field
     user: UserBase
     service: ServiceOut
     
