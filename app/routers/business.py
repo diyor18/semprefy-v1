@@ -255,3 +255,29 @@ def get_current_business_payouts(
     ]
 
     return {"payouts": formatted_payouts}
+
+
+
+@router.get("/current/users", response_model=List[schemas.UserSubscriptionOut])
+def get_users_with_subscriptions(
+    current_business: models.Business = Depends(oauth2.get_current_business),
+    db: Session = Depends(get_db),
+):
+    subscriptions = (
+        db.query(
+            models.Subscription.subscription_id,
+            models.User.name.label("user_name"),
+            models.User.email,
+            models.User.profile_image,
+            models.Service.name.label("service_name"),
+            models.Subscription.subscription_date,
+            models.Subscription.expiry_date,
+            models.Service.price
+        )
+        .join(models.Service, models.Subscription.service_id == models.Service.service_id)
+        .join(models.User, models.Subscription.user_id == models.User.user_id)
+        .filter(models.Service.business_id == current_business.business_id)
+        .all()
+    )
+    
+    return subscriptions

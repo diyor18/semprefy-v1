@@ -136,3 +136,17 @@ class Transaction(BaseModel):
         json_encoders = {
             date: lambda v: v.strftime("%d/%m/%Y") if v else None
         }
+        
+        
+class UserSubscriptionOut(BaseModel):
+    subscription_id: int
+    user_name: str
+    email: str
+    profile_image: Optional[str]
+    service_name: str
+    subscription_date: datetime  # Use datetime for timestamps
+    expiry_date: Optional[date]  # Use date for dates
+    price: float
+
+    class Config:
+        from_attributes = True
