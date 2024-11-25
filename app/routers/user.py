@@ -16,17 +16,20 @@ router = APIRouter(
 #CREATE A USER
 @router.post("/create", response_model=schemas.UserBase)
 def create_user(
-    user: schemas.UserCreate = Depends(), 
-    file: UploadFile = File(None), 
+    user: schemas.UserCreate = Depends(),
+    file: UploadFile = File(None),
+    card_number: str = None,
+    card_expiry: str = None,
     db: Session = Depends(get_db)
 ):
-    
+    # Check if user already exists
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="A user with this email already exists."
         )
+
     # Validate required fields
     missing_fields = []
     if not user.email:
@@ -41,35 +44,62 @@ def create_user(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Incorrect Data: Missing {', '.join(missing_fields)}"
         )
-    
+
     # Validate email format
-    if not isinstance(user.email, str) or "@" not in user.email:
+    if "@" not in user.email:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Incorrect Data: Invalid email format"
         )
-    
-    # Validate file type (if file is uploaded)
+
+    # Validate profile image
     if file and file.content_type not in ["image/jpeg", "image/png"]:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
         )
-    
+
     # Hash the password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
-    
-    # Upload the image to S3 and get the URL
+
+    # Upload profile image to S3 if provided
     profile_image = utils.upload_image_to_s3(file) if file else None
-    
-    # Create a new user record with the image URL
+
+    # Create a new user record
     new_user = models.User(**user.dict(), profile_image=profile_image)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
+
+    # If card information is provided, validate and create the card
+    if card_number and card_expiry:
+        utils.validate_card_format(card_number)
+        
+        # Determine card brand
+        card_brand = utils.get_card_brand(card_number)
+
+        # Create a new card record for the user
+        new_card = models.Card(
+            user_id=new_user.user_id,
+            card_number=card_number,
+            card_expiry=card_expiry,
+            card_brand=card_brand
+        )
+        db.add(new_card)
+        db.commit()
+
+    # Attach card details to the user response (optional)
+    card = db.query(models.Card).filter(models.Card.user_id == new_user.user_id).first()
+    if card:
+        new_user.card = schemas.CardOut(
+            card_number=card.card_number,
+            card_expiry=card.card_expiry,
+            card_brand=card.card_brand
+        )
+
     return new_user
+
 
 #GET CURRENT USER
 @router.get("/current", response_model=schemas.UserOut)
