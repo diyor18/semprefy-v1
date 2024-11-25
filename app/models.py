@@ -65,7 +65,7 @@ class Service(Base):
     business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=False)
     duration = Column(Integer, nullable=False, default=12)  # duration in months
-    status = Column(String, nullable=False, default="active")
+    status = Column(String, nullable=True, default="active")
     
     category = relationship("Category", back_populates="services")
     business = relationship("Business", back_populates="services")
