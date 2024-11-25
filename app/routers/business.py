@@ -247,10 +247,7 @@ def get_current_business_services(
     ).all()
 
     if not services:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No services found for the current business."
-        )
+        return []
 
     service_data = []
     for service in services:
@@ -352,8 +349,7 @@ def get_current_business_payouts(
             models.Transaction.created_at,
             models.Transaction.status,
             models.Subscription.user_id,
-            models.Service.name.label("service_name"),
-            models.Service.service_image.label("service_image")
+            models.Service.name.label("service_name")
         )
         .join(models.Subscription, models.Transaction.subscription_id == models.Subscription.subscription_id)
         .join(models.Service, models.Service.service_id == models.Subscription.service_id)
@@ -370,8 +366,7 @@ def get_current_business_payouts(
             "amount": payout.amount,
             "service": payout.service_name,
             "created_date": payout.created_at.strftime("%d/%m/%Y"),
-            "status": payout.status,
-            "service_image": payout.service_image 
+            "status": payout.status
         }
         for payout in payouts
     ]
