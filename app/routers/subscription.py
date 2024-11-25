@@ -77,7 +77,7 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
     subscriptions = db.query(models.Subscription).filter(models.Subscription.user_id == current_user.user_id).all()
     
     if not subscriptions:
-        raise HTTPException(status_code=404, detail="You don't have any subscriptions")
+        return []
     
     for subscription in subscriptions:
         update_days_till_next_payment(subscription)
