@@ -155,3 +155,36 @@ def update_service(
 
     return service
     
+    
+    
+@router.put("/toggle-status/{service_id}", response_model=schemas.ServiceOut)
+def toggle_service_status(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_business: int = Depends(oauth2.get_current_business)
+):
+    # Query the service by ID
+    service_query = db.query(models.Service).filter(models.Service.service_id == service_id)
+    service = service_query.first()
+
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Service with id {service_id} does not exist"
+        )
+
+    # Check if the service belongs to the current business
+    if service.business_id != current_business.business_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform the requested action"
+        )
+
+    # Toggle the status
+    service.status = "not active" if service.status == "active" else "active"
+
+    # Commit the change to the database
+    db.commit()
+    db.refresh(service)
+
+    return service
