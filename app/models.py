@@ -44,7 +44,7 @@ class Business(Base):
     password = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    profile_image = Column(String, nullable=False)
+    profile_image = Column(String, nullable=True)
     country = Column(String, nullable=False)
     city = Column(String, nullable=False)
     address = Column(String, nullable=False)
