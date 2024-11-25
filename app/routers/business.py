@@ -281,7 +281,7 @@ def get_current_business_services(
 
         service_data.append(service_dict)
 
-    return service_data
+    return service_data if service_data else []
 
 
 @router.get("/current/graph-data")
@@ -376,7 +376,7 @@ def get_current_business_payouts(
         for payout in payouts
     ]
 
-    return formatted_payouts
+    return formatted_payouts if formatted_payouts else []
 
 
 
@@ -411,4 +411,4 @@ def get_users_with_subscriptions(
     # Execute query and fetch results
     subscriptions = query.all()
     
-    return subscriptions
+    return subscriptions if subscriptions else []

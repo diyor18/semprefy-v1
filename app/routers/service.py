@@ -55,7 +55,7 @@ def get_all_services(
     # Execute query and fetch all results
     services = query.all()
 
-    return services
+    return services if services else []
 
 
 #CREATE A SERVICE
@@ -72,9 +72,8 @@ def create_service(service: schemas.ServiceCreate, db: Session = Depends(get_db)
 #GET MY SERVICES
 @router.get("/my_services", response_model=List[schemas.ServiceOut])
 def get_my_services(db: Session = Depends(get_db), current_business: int = Depends(oauth2.get_current_business)):
-    print(db.query(models.Service).filter(models.Service.business_id == current_business.business_id).all())
-    return db.query(models.Service).filter(models.Service.business_id == current_business.business_id).all()
-
+    my_services = db.query(models.Service).filter(models.Service.business_id == current_business.business_id).all()
+    return my_services if my_services else []
 #GET SERVICE BY ID
 @router.get("/{id}", response_model=schemas.ServiceOut)
 def get_service(id: int, db: Session = Depends(get_db)):

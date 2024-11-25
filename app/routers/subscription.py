@@ -83,7 +83,7 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
         update_days_till_next_payment(subscription)
         db.commit()  # Save updated days_till_next_payment
     
-    return subscriptions
+    return subscriptions if subscriptions else []
 
 @router.get("/my_subscriptions_amount", response_model=dict)
 def get_my_subscriptions_amount(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):

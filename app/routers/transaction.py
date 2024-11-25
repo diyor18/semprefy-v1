@@ -33,7 +33,8 @@ def get_my_transactions(db: Session = Depends(get_db), current_user: int = Depen
     if not transactions:
         raise HTTPException(status_code=404, detail="No transactions found")
     
-    return transactions
+    return transactions if transactions else []
+
 
 
 

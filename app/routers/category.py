@@ -15,7 +15,7 @@ router = APIRouter(
 @router.get("/all", response_model=List[schemas.CategoryOut])
 def categories(db: Session = Depends(get_db)):
     categories = db.query(models.Category).all()
-    return categories
+    return categories if categories else []
 
 #GET TOP CATEGORIES
 @router.get("/top", response_model=List[schemas.CategoryOut])
