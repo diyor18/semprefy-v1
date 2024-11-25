@@ -105,6 +105,7 @@ def update_user(
     birthdate: str = None,
     card_number: str = None,
     card_expiry: str = None,
+    file: UploadFile = File(None),  # Optional profile image
     db: Session = Depends(get_db),  # Database session
     current_user: int = Depends(oauth2.get_current_user)  # Current logged-in user
 ):
@@ -128,12 +129,22 @@ def update_user(
                 detail="Invalid birthdate format. Use dd/mm/yyyy."
             )
 
+    # Update profile image if a new file is uploaded
+    if file:
+        if file.content_type not in ["image/jpeg", "image/png"]:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
+            )
+        # Upload the new image to S3 and get the URL
+        profile_image_url = utils.upload_image_to_s3(file)
+        user.profile_image = profile_image_url
+
     # Commit changes to the user record
     db.commit()
 
     # If card information is provided, update the card
     if card_number and card_expiry:
-        
         utils.validate_card_format(card_number)
         
         # Determine card brand
