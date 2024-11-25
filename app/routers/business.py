@@ -201,7 +201,8 @@ def get_current_business_services(
             db.query(func.sum(models.Service.price))
             .join(models.Subscription, models.Service.service_id == models.Subscription.service_id)
             .filter(
-                models.Service.service_id == service.service_id
+                models.Service.service_id == service.service_id,
+                models.Subscription.status == "active"
             )
             .scalar() or 0
         )
