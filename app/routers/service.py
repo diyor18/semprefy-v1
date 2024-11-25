@@ -103,18 +103,55 @@ def delete_service(service_id: int, db: Session = Depends(get_db), current_busin
 
 #UPDATE A SERVICE
 @router.put("/update/{service_id}", response_model=schemas.ServiceOut)
-def update_post(service_id: int, updated_service: schemas.ServiceCreate, db: Session = Depends(get_db), current_business: int = Depends(oauth2.get_current_business)):
+def update_service(
+    service_id: int,
+    price: Optional[float] = None,
+    name: Optional[str] = None,
+    duration: Optional[int] = None,
+    description: Optional[str] = None,
+    category: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_business: int = Depends(oauth2.get_current_business)
+):
+    # Query the service by ID
     service_query = db.query(models.Service).filter(models.Service.service_id == service_id)
-    
     service = service_query.first()
-    if service == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service with id: {id} does not exist")
-    print(current_business.name)
+
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Service with id {service_id} does not exist"
+        )
+
+    # Check if the service belongs to the current business
     if service.business_id != current_business.business_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorised to perfom the requested action")
-    
-    service_query.update(updated_service.dict(), synchronize_session=False)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to perform the requested action"
+        )
+
+    # Update service fields if provided
+    if price is not None:
+        service.price = price
+    if name is not None:
+        service.name = name
+    if duration is not None:
+        service.duration = duration
+    if description is not None:
+        service.description = description
+    if category is not None:
+        # Validate the category exists
+        category_obj = db.query(models.Category).filter(models.Category.name == category).first()
+        if not category_obj:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Category '{category}' does not exist"
+            )
+        service.category_id = category_obj.category_id
+
+    # Commit updates to the database
     db.commit()
-    
+    db.refresh(service)
+
     return service
     
