@@ -63,7 +63,7 @@ class Service(Base):
     price = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=True)
     duration = Column(Integer, nullable=False, default=12)  # duration in months
     status = Column(String, nullable=True, default="active")
     
