@@ -15,16 +15,49 @@ router = APIRouter(
 
 #CREATE A USER
 @router.post("/create", response_model=schemas.UserBase)
-def create_user(user: schemas.UserCreate = Depends(), file: UploadFile = File(None), db: Session = Depends(get_db)):
-    #HASHING THE PASSWORD
+def create_user(
+    user: schemas.UserCreate = Depends(), 
+    file: UploadFile = File(None), 
+    db: Session = Depends(get_db)
+):
+    # Validate required fields
+    missing_fields = []
+    if not user.email:
+        missing_fields.append("email")
+    if not user.name:
+        missing_fields.append("name")
+    if not user.password:
+        missing_fields.append("password")
+    
+    if missing_fields:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Incorrect Data: Missing {', '.join(missing_fields)}"
+        )
+    
+    # Validate email format
+    if not isinstance(user.email, str) or "@" not in user.email:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect Data: Invalid email format"
+        )
+    
+    # Validate file type (if file is uploaded)
+    if file and file.content_type not in ["image/jpeg", "image/png"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
+        )
+    
+    # Hash the password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
     
     # Upload the image to S3 and get the URL
     profile_image = utils.upload_image_to_s3(file) if file else None
     
-    # Create a new user record with image URL
-    new_user = models.User(**user.dict(), profile_image = profile_image)
+    # Create a new user record with the image URL
+    new_user = models.User(**user.dict(), profile_image=profile_image)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

@@ -19,15 +19,65 @@ router = APIRouter(
 
 #CREATE A BUSINESS
 @router.post("/create", response_model=schemas.BusinessOut)
-def create_business(business: schemas.BusinessCreate = Depends(), file: UploadFile = File(None), db: Session = Depends(get_db)):
-    #HASHING THE PASSWORD
+def create_business(
+    business: schemas.BusinessCreate = Depends(), 
+    file: UploadFile = File(None), 
+    db: Session = Depends(get_db)
+):
+    # Validate required fields
+    missing_fields = []
+    if not business.email:
+        missing_fields.append("email")
+    if not business.name:
+        missing_fields.append("name")
+    if not business.password:
+        missing_fields.append("password")
+    if not business.phone:
+        missing_fields.append("phone")
+    if not business.description:
+        missing_fields.append("description")
+    if not business.country:
+        missing_fields.append("country")
+    if not business.city:
+        missing_fields.append("city")
+    if not business.address:
+        missing_fields.append("address")
+    if not business.bank_account:
+        missing_fields.append("bank_account")
+    if not business.bank_account_name:
+        missing_fields.append("bank_account_name")
+    if not business.bank_name:
+        missing_fields.append("bank_name")
+    
+    if missing_fields:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Incorrect Data: Missing {', '.join(missing_fields)}"
+        )
+    
+    # Validate email format
+    if not isinstance(business.email, str) or "@" not in business.email:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect Data: Invalid email format"
+        )
+    
+    # Validate file type (if file is uploaded)
+    if file and file.content_type not in ["image/jpeg", "image/png"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
+        )
+    
+    # Hash the password
     hashed_password = utils.hash(business.password)
     business.password = hashed_password
     
     # Upload the image to S3 and get the URL
     profile_image = utils.upload_image_to_s3(file) if file else None
     
-    new_business = models.Business(**business.dict(), profile_image = profile_image)
+    # Create a new business record with the image URL
+    new_business = models.Business(**business.dict(), profile_image=profile_image)
     db.add(new_business)
     db.commit()
     db.refresh(new_business)

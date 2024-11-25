@@ -39,12 +39,12 @@ class Business(Base):
     
     business_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    description = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    profile_image = Column(String, nullable=True)
+    profile_image = Column(String, nullable=False)
     country = Column(String, nullable=False)
     city = Column(String, nullable=False)
     address = Column(String, nullable=False)
@@ -62,9 +62,8 @@ class Service(Base):
     description = Column(String, nullable=False)
     price = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    service_image = Column(String, nullable=True)
     business_id = Column(Integer, ForeignKey("businesses.business_id", ondelete="CASCADE"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.category_id"), nullable=False)
     duration = Column(Integer, nullable=False, default=12)  # duration in months
     status = Column(String, nullable=False, default="active")
     
