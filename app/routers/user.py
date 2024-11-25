@@ -20,6 +20,13 @@ def create_user(
     file: UploadFile = File(None), 
     db: Session = Depends(get_db)
 ):
+    
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, 
+            detail="A user with this email already exists."
+        )
     # Validate required fields
     missing_fields = []
     if not user.email:

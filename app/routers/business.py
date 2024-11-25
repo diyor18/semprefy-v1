@@ -24,6 +24,14 @@ def create_business(
     file: UploadFile = File(None), 
     db: Session = Depends(get_db)
 ):
+    
+    
+    existing_business = db.query(models.Business).filter(models.Business.email == business.email).first()
+    if existing_business:
+        raise HTTPException(
+            status_code=400, 
+            detail="A business with this email already exists."
+        )
     # Validate required fields
     missing_fields = []
     if not business.email:
