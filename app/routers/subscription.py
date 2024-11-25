@@ -119,3 +119,35 @@ def update_days_till_next_payment(subscription: models.Subscription):
         next_payment_date += timedelta(days=30)
     
     subscription.days_till_next_payment = (next_payment_date - today).days
+    
+    
+    
+@router.delete("/cleanup", status_code=status.HTTP_204_NO_CONTENT)
+def delete_expired_subscriptions(
+    db: Session = Depends(get_db),
+):
+    # Get the current date
+    current_date = datetime.utcnow().date()
+
+    # Query for expired subscriptions belonging to the current business
+    expired_subscriptions_query = (
+        db.query(models.Subscription)
+        .join(models.Service, models.Subscription.service_id == models.Service.service_id)
+        .filter(
+            models.Subscription.expiry_date < current_date
+        )
+    )
+
+    expired_subscriptions = expired_subscriptions_query.all()
+
+    if not expired_subscriptions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No expired subscriptions found for deletion"
+        )
+
+    # Delete all expired subscriptions
+    expired_subscriptions_query.delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": f"{len(expired_subscriptions)} expired subscriptions have been deleted"}
