@@ -20,6 +20,7 @@ def create_user(
     file: UploadFile = File(None),
     card_number: str = None,
     card_expiry: str = None,
+    card_cvc: int = None,
     db: Session = Depends(get_db)
 ):
     # Check if user already exists
@@ -59,10 +60,10 @@ def create_user(
             detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
         )
         
-    if not card_number or not card_expiry:
+    if not card_number or not card_expiry or not card_cvc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Enter Card Details"
+            detail="Enter Valid Card Details"
         )
 
     # Hash the password
@@ -148,6 +149,7 @@ def update_user(
     birthdate: str = None,
     card_number: str = None,
     card_expiry: str = None,
+    card_cvc: int = None,
     file: UploadFile = File(None),  # Optional profile image
     db: Session = Depends(get_db),  # Database session
     current_user: int = Depends(oauth2.get_current_user)  # Current logged-in user
@@ -186,8 +188,8 @@ def update_user(
     # Commit changes to the user record
     db.commit()
 
-    # If card information is provided, update the card
-    if card_number and card_expiry:
+    # If card information is provided, update the card    
+    if card_number and card_expiry and card_cvc:
         utils.validate_card_format(card_number)
         
         # Determine card brand
