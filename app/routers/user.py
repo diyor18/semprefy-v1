@@ -58,6 +58,12 @@ def create_user(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Incorrect Data: Wrong type of image. Only jpg and png are allowed."
         )
+        
+    if not card_number or not card_expiry:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Enter Card Details"
+        )
 
     # Hash the password
     hashed_password = utils.hash(user.password)
