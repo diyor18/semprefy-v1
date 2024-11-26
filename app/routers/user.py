@@ -65,7 +65,7 @@ def create_user(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Enter Valid Card Details"
         )
-
+    utils.validate_card_format(card_number)
     # Hash the password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
