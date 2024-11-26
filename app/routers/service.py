@@ -128,6 +128,9 @@ def update_service(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to perform the requested action"
         )
+        
+    if category == "null":
+        category = None
 
     # Update service fields if provided
     if price is not None:

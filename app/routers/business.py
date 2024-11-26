@@ -33,6 +33,12 @@ def create_business(
             detail="A business with this email already exists."
         )
     # Validate required fields
+    if business.country == "null":
+        business.country = None
+        
+    if business.city == "null":
+        business.city = None
+        
     missing_fields = []
     if not business.email:
         missing_fields.append("email")
