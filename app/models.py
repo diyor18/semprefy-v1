@@ -110,7 +110,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
     
     transaction_id = Column(Integer, primary_key=True, autoincrement=True)
-    amount = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     status = Column(String, nullable=False)
     card_brand = Column(String, nullable=False)
