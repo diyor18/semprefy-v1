@@ -66,13 +66,13 @@ def create_service(
     current_business: int = Depends(oauth2.get_current_business)
 ):
     # Check if a category is provided
-    if service.category:
+    if service.category_name:
         # Validate that the category exists
-        category_obj = db.query(models.Category).filter(models.Category.name == service.category).first()
+        category_obj = db.query(models.Category).filter(models.Category.name == service.category_name).first()
         if not category_obj:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Category '{service.category}' does not exist"
+                detail=f"Category '{service.category_name}' does not exist"
             )
         # Assign the category ID to the service
         service_dict = service.dict()
