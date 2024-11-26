@@ -65,6 +65,8 @@ def create_service(
     db: Session = Depends(get_db), 
     current_business: int = Depends(oauth2.get_current_business)
 ):
+    if service.category_name == "null":
+        service.category_name = None
     # Check if a category is provided
     if service.category_name:
         # Validate that the category exists
