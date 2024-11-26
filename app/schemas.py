@@ -83,6 +83,7 @@ class ServiceBase(BaseModel):
     duration: int
     
 class ServiceCreate(ServiceBase):
+    category_name: Optional[str] = None
     pass
 
 class ServiceOut(ServiceBase):
