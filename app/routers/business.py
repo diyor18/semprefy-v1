@@ -316,26 +316,27 @@ def get_current_business_graph_data(
             .scalar() or 0
         )
 
-        # Count transactions linked to the current business's services on this day
-        transactions_count = (
-            db.query(func.count(models.Transaction.transaction_id))
+        # Calculate the total amount of transactions linked to the current business's services on this day
+        total_transaction_amount = (
+            db.query(func.sum(models.Transaction.amount))
             .join(models.Subscription, models.Subscription.subscription_id == models.Transaction.subscription_id)
             .join(models.Service, models.Service.service_id == models.Subscription.service_id)
             .filter(
                 models.Service.business_id == business_id,
                 func.date(models.Transaction.created_at) == single_date
             )
-            .scalar() or 0
+            .scalar() or 0.0
         )
 
         # Append the day's data to the response
         graph_data.append({
             "day": day_int,  # Use the integer day
             "new_users": new_users_count,
-            "transactions": transactions_count
+            "total_transaction_amount": total_transaction_amount
         })
 
     return {"graph_data": graph_data}
+
 
 
 
