@@ -116,7 +116,7 @@ class Subscription(BaseModel):
             
 class Transaction(BaseModel):
     transaction_id: int
-    amount: int
+    amount: float
     created_at: datetime
     status: str
     subscription_id: int

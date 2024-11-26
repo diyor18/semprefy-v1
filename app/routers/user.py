@@ -20,7 +20,7 @@ def create_user(
     file: UploadFile = File(None),
     card_number: str = None,
     card_expiry: str = None,
-    card_cvc: int = None,
+    card_cvc: str = None,
     db: Session = Depends(get_db)
 ):
     # Check if user already exists
@@ -149,7 +149,7 @@ def update_user(
     birthdate: str = None,
     card_number: str = None,
     card_expiry: str = None,
-    card_cvc: int = None,
+    card_cvc: str = None,
     file: UploadFile = File(None),  # Optional profile image
     db: Session = Depends(get_db),  # Database session
     current_user: int = Depends(oauth2.get_current_user)  # Current logged-in user
