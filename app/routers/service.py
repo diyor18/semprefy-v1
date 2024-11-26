@@ -60,38 +60,29 @@ def get_all_services(
 
 #CREATE A SERVICE
 @router.post("/create", response_model=schemas.ServiceOut)
-def create_service(
-    service: schemas.ServiceCreate, 
-    db: Session = Depends(get_db), 
-    current_business: int = Depends(oauth2.get_current_business)
-):
-    if service.category_name == "null":
-        service.category_name = None
-    # Check if a category is provided
-    if service.category_name:
-        # Validate that the category exists
-        category_obj = db.query(models.Category).filter(models.Category.name == service.category_name).first()
+def create_service(service: schemas.ServiceCreate, category: Optional[str] = None, db: Session = Depends(get_db), current_business: int = Depends(oauth2.get_current_business)):
+    if category == "null":
+        category = None
+        
+    if category is not None:
+        # Validate the category exists
+        category_obj = db.query(models.Category).filter(models.Category.name == category).first()
         if not category_obj:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Category '{service.category_name}' does not exist"
+                detail=f"Category '{category}' does not exist"
             )
-        # Assign the category ID to the service
-        service_dict = service.dict()
-        service_dict["category_id"] = category_obj.category_id
+        new_service = models.Service(business_id = current_business.business_id, category_id = category_obj.category_id, **service.dict())
     else:
-        service_dict = service.dict()
-
-    # Create a new service with the provided data
-    new_service = models.Service(
-        business_id=current_business.business_id,
-        **service_dict
-    )
+        new_service = models.Service(business_id = current_business.business_id, **service.dict())
     db.add(new_service)
     db.commit()
     db.refresh(new_service)
     
     return new_service
+
+
+
 
 
 #GET MY SERVICES
