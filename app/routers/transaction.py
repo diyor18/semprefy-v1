@@ -21,19 +21,20 @@ router = APIRouter(
 #GET MY SUBSCRIPTIONS
 @router.get("/my_transactions", response_model=List[schemas.Transaction])
 def get_my_transactions(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    
+    # Process transactions (if needed)
     process_transactions(db)
+
+    # Query transactions, ordered by latest first
     transactions = (
         db.query(models.Transaction)
         .join(models.Subscription, models.Transaction.subscription_id == models.Subscription.subscription_id)
         .filter(models.Subscription.user_id == current_user.user_id)
+        .order_by(models.Transaction.created_at.desc())  # Order by created_at in descending order
         .all()
     )
 
-    if not transactions:
-        return []
-    
     return transactions if transactions else []
+
 
 
 
@@ -51,7 +52,7 @@ def process_transactions(db: Session):
                 db.query(models.Transaction)
                 .filter(
                     models.Transaction.subscription_id == subscription.subscription_id,
-                    models.Transaction.status == "pending"
+                    models.Transaction.status == "Pending"
                 )
                 .first()
             )
@@ -59,7 +60,7 @@ def process_transactions(db: Session):
                 # Create a new pending transaction
                 new_transaction = models.Transaction(
                     amount=subscription.service.price,
-                    status="pending",
+                    status="Pending",
                     subscription_id=subscription.subscription_id,
                     card_brand=user_card.card_brand 
                 )

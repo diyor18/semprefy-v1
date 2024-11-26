@@ -81,7 +81,8 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
     
     for subscription in subscriptions:
         update_days_till_next_payment(subscription)
-        db.commit()  # Save updated days_till_next_payment
+        delete_expired(subscription, db)
+        db.commit()
     
     return subscriptions if subscriptions else []
 
@@ -122,32 +123,11 @@ def update_days_till_next_payment(subscription: models.Subscription):
     
     
     
-@router.delete("/cleanup", status_code=status.HTTP_204_NO_CONTENT)
-def delete_expired_subscriptions(
-    db: Session = Depends(get_db),
-):
-    # Get the current date
+def delete_expired(subscription: models.Subscription, db: Session):
+    """
+    Deletes the subscription if it is expired.
+    """
     current_date = datetime.utcnow().date()
 
-    # Query for expired subscriptions belonging to the current business
-    expired_subscriptions_query = (
-        db.query(models.Subscription)
-        .join(models.Service, models.Subscription.service_id == models.Service.service_id)
-        .filter(
-            models.Subscription.expiry_date < current_date
-        )
-    )
-
-    expired_subscriptions = expired_subscriptions_query.all()
-
-    if not expired_subscriptions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No expired subscriptions found for deletion"
-        )
-
-    # Delete all expired subscriptions
-    expired_subscriptions_query.delete(synchronize_session=False)
-    db.commit()
-
-    return {"message": f"{len(expired_subscriptions)} expired subscriptions have been deleted"}
+    if subscription.expiry_date and subscription.expiry_date < current_date:
+        db.delete(subscription)
