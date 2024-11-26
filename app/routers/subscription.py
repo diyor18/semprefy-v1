@@ -81,7 +81,12 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
     
     for subscription in subscriptions:
         update_days_till_next_payment(subscription)
-        delete_expired(subscription, db)
+        
+        
+        if subscription.expiry_date < datetime.utcnow().date():
+            delete_expired(subscription, db)
+        else:
+            db.commit()
         db.commit()
     
     return subscriptions if subscriptions else []
@@ -124,10 +129,5 @@ def update_days_till_next_payment(subscription: models.Subscription):
     
     
 def delete_expired(subscription: models.Subscription, db: Session):
-    """
-    Deletes the subscription if it is expired.
-    """
-    current_date = datetime.utcnow().date()
-
-    if subscription.expiry_date and subscription.expiry_date < current_date:
-        db.delete(subscription)
+    db.delete(subscription)
+    db.commit()
