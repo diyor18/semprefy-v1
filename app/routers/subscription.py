@@ -81,7 +81,7 @@ def get_my_subscriptions(db: Session = Depends(get_db), current_user: int = Depe
     
     for subscription in subscriptions:
         update_days_till_next_payment(subscription)
-        delete_expired(subscription, db)
+        #delete_expired(subscription, db)
         db.commit()
     
     return subscriptions if subscriptions else []
