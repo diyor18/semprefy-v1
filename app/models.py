@@ -6,7 +6,6 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 
-#example models
 class User(Base):
     __tablename__ = "users"
 
